@@ -3,6 +3,7 @@ import os
 
 notebook_path = "disease_detection.ipynb"
 
+# Define the cells for the notebook
 cells = [
     {
         "cell_type": "markdown",
