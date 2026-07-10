@@ -1,3 +1,4 @@
 data
-*.pth
+results/best_model_augmented.pth
+results/best_model_non_augmented.pth
 disease_detection.ipynb
