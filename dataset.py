@@ -4,12 +4,6 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
 
 def get_transforms(input_size=128):
-    """
-    Returns standard transforms for leaf image datasets.
-    Since the augmented dataset already has pre-saved augmented images,
-    we use the same basic resizing and normalization for both datasets
-    to maintain consistent evaluation.
-    """
     transform = transforms.Compose([
         transforms.Resize((input_size, input_size)),
         transforms.ToTensor(),
@@ -19,65 +13,59 @@ def get_transforms(input_size=128):
     return transform
 
 def get_dataset_splits(root_dir, val_split=0.1, test_split=0.1, input_size=128, seed=42, subset_fraction=1.0):
-    """
-    Loads ImageFolder from root_dir and splits into train, val, and test subsets.
-    Uses a fixed seed for reproducible splits.
-    """
     transform = get_transforms(input_size)
     dataset = datasets.ImageFolder(root_dir, transform=transform)
-    
-    # Calculate sizes
+
     total_size = len(dataset)
     val_size = int(total_size * val_split)
     test_size = int(total_size * test_split)
     train_size = total_size - val_size - test_size
-    
-    # Split dataset deterministically
+
     generator = torch.Generator().manual_seed(seed)
     train_dataset, val_dataset, test_dataset = random_split(
         dataset, [train_size, val_size, test_size], generator=generator
     )
-    
-    # Apply subset fraction if specified (< 1.0)
+
     if subset_fraction < 1.0:
         sub_generator = torch.Generator().manual_seed(seed)
-        
-        # Subsample train
+
         train_sub_size = max(1, int(len(train_dataset) * subset_fraction))
         train_dataset, _ = random_split(train_dataset, [train_sub_size, len(train_dataset) - train_sub_size], generator=sub_generator)
-        
-        # Subsample val
+
         val_sub_size = max(1, int(len(val_dataset) * subset_fraction))
         val_dataset, _ = random_split(val_dataset, [val_sub_size, len(val_dataset) - val_sub_size], generator=sub_generator)
-        
-        # Subsample test
+
         test_sub_size = max(1, int(len(test_dataset) * subset_fraction))
         test_dataset, _ = random_split(test_dataset, [test_sub_size, len(test_dataset) - test_sub_size], generator=sub_generator)
-        
+
     return train_dataset, val_dataset, test_dataset, dataset.classes
 
 def get_dataloaders(train_dataset, val_dataset, test_dataset, batch_size=64, num_workers=4):
-    """
-    Creates PyTorch DataLoaders for train, val, and test datasets.
-    """
-    # Use 0 num_workers on MacOS if encountering multiprocessing issues, otherwise 4 is fine.
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, 
-        num_workers=num_workers, pin_memory=True
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, 
-        num_workers=num_workers, pin_memory=True
-    )
-    test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False, 
-        num_workers=num_workers, pin_memory=True
-    )
-    
+    # wait i think these nones are really chopped :/
+    train_loader = None
+    if (train_dataset != None):
+        train_loader = DataLoader(
+            train_dataset, batch_size=batch_size, shuffle=True,
+            num_workers=num_workers, pin_memory=True
+        )
+
+    val_loader = None
+    if (val_dataset != None):
+        val_loader = DataLoader(
+            val_dataset, batch_size=batch_size, shuffle=False,
+            num_workers=num_workers, pin_memory=True
+        )
+
+    test_loader = None
+    if (test_dataset != None):
+        test_loader = DataLoader(
+            test_dataset, batch_size=batch_size, shuffle=False,
+            num_workers=num_workers, pin_memory=True
+        )
+
     return train_loader, val_loader, test_loader
 
 if __name__ == '__main__':
-    # Test dataset loading
     import sys
     base_path = "Data for Identification of Plant Leaf Diseases Using a 9-layer Deep Convolutional Neural Network"
     no_aug_dir = os.path.join(base_path, "Plant_leave_diseases_dataset_without_augmentation")
