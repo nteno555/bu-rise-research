@@ -1,1 +1,3 @@
 data
+results/best_model_non_augmented.pth
+results/best_model_augmented.pth
