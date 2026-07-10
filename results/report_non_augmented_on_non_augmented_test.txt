@@ -1,6 +1,6 @@
 Evaluation of non_augmented on non_augmented_test
 Checkpoint source: results/best_model_non_augmented.pth
-Timestamp: Fri Jul 10 10:33:31 EDT 2026
+Timestamp: Fri Jul 10 14:41:01 EDT 2026
 ==================================================
 Overall Accuracy:  0.9842
 Overall Precision (weighted): 0.9848
