@@ -1,0 +1,20 @@
+Evaluation of non_augmented on non_augmented_test
+Checkpoint source: results/best_model_non_augmented.pth
+Timestamp: Fri Jul 10 10:24:52 EDT 2026
+==================================================
+Overall Accuracy:  0.9842
+Overall Precision (weighted): 0.9848
+Overall Recall (weighted):    0.9842
+Overall F1-score (weighted):  0.9841
+==================================================
+
+                          precision    recall  f1-score   support
+
+      Apple___Apple_scab       1.00      0.91      0.95        43
+       Apple___Black_rot       0.96      1.00      0.98        64
+Apple___Cedar_apple_rust       0.96      1.00      0.98        26
+         Apple___healthy       0.99      0.99      0.99       184
+
+                accuracy                           0.98       317
+               macro avg       0.98      0.98      0.98       317
+            weighted avg       0.98      0.98      0.98       317
