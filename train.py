@@ -12,24 +12,18 @@ from model import PlantDiseaseCNN
 from dataset import get_dataset_splits, get_dataloaders
 
 def train_model(args):
-    # Set seed for reproducibility
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(args.seed)
         
-    # Create save directory
     os.makedirs(args.save_dir, exist_ok=True)
     
-    # Device setup
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-    elif torch.cuda.is_available():
+    if torch.cuda.is_available():
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
     print(f"Using device: {device}")
     
-    # Load dataset
     print(f"Loading dataset from: {args.dataset_dir}")
     train_ds, val_ds, test_ds, classes = get_dataset_splits(
         args.dataset_dir, input_size=args.input_size, seed=args.seed,
@@ -43,15 +37,12 @@ def train_model(args):
         train_ds, val_ds, test_ds, batch_size=args.batch_size, num_workers=args.num_workers
     )
     
-    # Initialize model
     model = PlantDiseaseCNN(num_classes=num_classes, input_size=args.input_size)
     model = model.to(device)
     
-    # Loss and Optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
-    # Training tracking lists
     history = {
         'epoch': [],
         'train_loss': [],
@@ -68,7 +59,6 @@ def train_model(args):
     for epoch in range(1, args.epochs + 1):
         epoch_start_time = time.time()
         
-        # Training Phase
         model.train()
         train_loss = 0.0
         train_correct = 0
@@ -77,18 +67,14 @@ def train_model(args):
         for images, labels in tqdm(train_loader, desc=f"Epoch {epoch}/{args.epochs} [Train]"):
             images, labels = images.to(device), labels.to(device)
             
-            # Zero gradients
             optimizer.zero_grad()
             
-            # Forward pass
             outputs = model(images)
             loss = criterion(outputs, labels)
             
-            # Backward pass and optimize
             loss.backward()
             optimizer.step()
             
-            # Track statistics
             train_loss += loss.item() * images.size(0)
             _, predicted = torch.max(outputs, 1)
             train_total += labels.size(0)
@@ -97,7 +83,6 @@ def train_model(args):
         epoch_train_loss = train_loss / train_total
         epoch_train_acc = train_correct / train_total
         
-        # Validation Phase
         model.eval()
         val_loss = 0.0
         val_correct = 0
@@ -120,7 +105,6 @@ def train_model(args):
         
         epoch_time = time.time() - epoch_start_time
         
-        # Log to history
         history['epoch'].append(epoch)
         history['train_loss'].append(epoch_train_loss)
         history['train_acc'].append(epoch_train_acc)
@@ -133,7 +117,6 @@ def train_model(args):
               f"Val Loss: {epoch_val_loss:.4f} | Val Acc: {epoch_val_acc:.4f} | "
               f"Time: {epoch_time:.1f}s")
         
-        # Checkpoint if best model
         if epoch_val_acc > best_val_acc:
             best_val_acc = epoch_val_acc
             torch.save({
@@ -146,13 +129,11 @@ def train_model(args):
             }, checkpoint_path)
             print(f"--> Saved new best model checkpoint to {checkpoint_path} with Val Acc: {epoch_val_acc:.4f}")
             
-    # Save training history to CSV
     history_df = pd.DataFrame(history)
     csv_path = os.path.join(args.save_dir, f"history_{args.dataset_name}.csv")
     history_df.to_csv(csv_path, index=False)
     print(f"Saved training history to {csv_path}")
     
-    # Plot and save curves
     plot_training_curves(history_df, args.dataset_name, args.save_dir)
     print("Saved training curves plots.")
     
@@ -163,7 +144,6 @@ def plot_training_curves(df, dataset_name, save_dir):
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
     
-    # Loss plot
     ax1.plot(epochs, df['train_loss'], label='Train Loss', color='#1f77b4', marker='o')
     ax1.plot(epochs, df['val_loss'], label='Val Loss', color='#ff7f0e', marker='s')
     ax1.set_title(f'Loss vs. Epochs ({dataset_name})', fontsize=14, fontweight='bold')
@@ -172,7 +152,6 @@ def plot_training_curves(df, dataset_name, save_dir):
     ax1.legend(fontsize=11)
     ax1.grid(True, linestyle='--', alpha=0.6)
     
-    # Accuracy plot
     ax2.plot(epochs, df['train_acc'], label='Train Acc', color='#2ca02c', marker='o')
     ax2.plot(epochs, df['val_acc'], label='Val Acc', color='#d62728', marker='s')
     ax2.set_title(f'Accuracy vs. Epochs ({dataset_name})', fontsize=14, fontweight='bold')
