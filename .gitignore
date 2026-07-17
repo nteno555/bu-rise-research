@@ -1,3 +1,9 @@
-data
-results/best_model_non_augmented.pth
-results/best_model_augmented.pth
+apple-crop-cnn/data
+apple-crop-cnn/results/best_model_non_augmented.pth
+apple-crop-cnn/results/best_model_augmented.pth
+cork-bark-cnn/cork_oak_dataset
+cork-bark-cnn/checkpoints/centroid_knn.pkl
+cork-bark-cnn/checkpoints/efficientnet_best.pt
+cork-bark-cnn/checkpoints/mobilenet_best.pt
+cork-bark-cnn/checkpoints/random_forest.pkl
+cork-bark-cnn/checkpoints/svm.pkl

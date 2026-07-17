@@ -1,0 +1,20 @@
+# Cork Oak Bark Disease Classification
+# Install with: pip install -r requirements.txt
+
+# Deep learning
+torch>=2.0
+torchvision>=0.15
+
+# Classical ML
+scikit-learn>=1.3
+
+# Image processing
+Pillow>=10.0
+
+# Numerical / data
+numpy>=1.24
+
+# Visualization & progress
+matplotlib>=3.7
+seaborn>=0.12
+tqdm>=4.65
