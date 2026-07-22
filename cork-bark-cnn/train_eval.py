@@ -262,7 +262,6 @@ def main() -> None:
         results["SVM"] = {"metrics": metrics, "train_time": elapsed}
         print(metrics["report"])
 
-
     if "cknn" in args.models:
         print("─" * 50)
         print("▶  Centroid-KNN")
@@ -270,10 +269,29 @@ def main() -> None:
         cknn = build_centroid_knn(
             X_train, y_train,
             num_classes=num_classes,
-            k_per_class=3,
-            knn_k=5,
+            k_per_class=7,
+            knn_k=1,
             class_names=class_names,
         )
+
+        print("\nREPRESENTATIVE IMAGE FILE PATHS:")
+        for cls_idx, reps in cknn.representatives_by_class.items():
+            cls_name = class_names[cls_idx]
+            print(f"\n  Class {cls_idx} ({cls_name}):")
+            for i, rep in enumerate(reps):
+                row_idx = rep["original_index"]
+
+                if hasattr(train_loader.dataset, 'get_image_path'):
+                    img_path = train_loader.dataset.get_image_path(row_idx)
+                elif hasattr(train_loader.dataset, 'indices'):
+                    real_idx = train_loader.dataset.indices[row_idx]
+                    img_path, _ = train_loader.dataset.dataset.samples[real_idx]
+                else:
+                    img_path, _ = train_loader.dataset.samples[row_idx]
+
+                print(f"    [{i + 1}] Row {row_idx} -> Path: {img_path}")
+        print()
+
         preds, probs = predict_centroid_knn(cknn, X_val)
         elapsed = time.time() - t0
         save_centroid_knn(cknn, str(OUTPUT_DIR / "centroid_knn.pkl"))
@@ -370,3 +388,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

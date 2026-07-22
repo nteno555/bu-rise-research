@@ -88,53 +88,15 @@ class BarkDiseaseDataset(Dataset):
 
 def get_transforms(
     image_size: int = 224,
-    color_jitter_strength: float = 0.4,
-    random_grayscale_p: float = 0.10,
-    gaussian_blur_p: float = 0.20,
 ) -> tuple[transforms.Compose, transforms.Compose]:
 
-    oversize = int(image_size * 1.12)   # e.g. 250 for 224-target
-
-    train_transform = transforms.Compose([
-        transforms.Resize(
-            (oversize, oversize),
-            interpolation=transforms.InterpolationMode.LANCZOS,
-        ),
-
-        transforms.RandomCrop(image_size),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomVerticalFlip(p=0.5),
-
-        transforms.RandomRotation(
-            degrees=20,
-            interpolation=transforms.InterpolationMode.BILINEAR,
-            fill=0,
-        ),
-        transforms.ColorJitter(
-            brightness=color_jitter_strength,
-            contrast=color_jitter_strength,
-            saturation=color_jitter_strength,
-            hue=0.1,
-        ),
-        transforms.RandomGrayscale(p=random_grayscale_p),
-        transforms.RandomApply(
-            [transforms.GaussianBlur(kernel_size=5, sigma=(0.1, 2.0))],
-            p=gaussian_blur_p,
-        ),
+    standard_transform = transforms.Compose([
+        transforms.Resize((image_size, image_size), interpolation=transforms.InterpolationMode.LANCZOS),
         transforms.ToTensor(),
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
-    val_transform = transforms.Compose([
-        transforms.Resize(int(image_size * 1.15),
-                          interpolation=transforms.InterpolationMode.LANCZOS),
-        transforms.CenterCrop(image_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-    ])
-
-    return train_transform, val_transform
-
+    return standard_transform, standard_transform
 
 def get_dataloaders(
     root: str | Path,
@@ -161,7 +123,7 @@ def get_dataloaders(
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=False,
         num_workers=num_workers,
         pin_memory=True,
         drop_last=len(train_dataset) >= batch_size,
@@ -187,6 +149,18 @@ class _TransformSubset(Dataset):
         self.subset    = subset
         self.transform = transform
 
+    @property
+    def indices(self):
+        return self.subset.indices
+
+    @property
+    def dataset(self):
+        return self.subset.dataset
+
+    def get_image_path(self, idx: int) -> Path:
+        real_idx = self.subset.indices[idx]
+        return self.subset.dataset.samples[real_idx][0]
+
     def __len__(self) -> int:
         return len(self.subset)
 
@@ -204,6 +178,7 @@ class _TransformSubset(Dataset):
         return img, label
 
 
+
 if __name__ == "__main__":
     import sys
 
@@ -214,3 +189,4 @@ if __name__ == "__main__":
     print(f"Batch shape : {imgs.shape}   Labels: {labels.tolist()}")
     print(f"Pixel range : [{imgs.min():.2f}, {imgs.max():.2f}]")
     print("augmentation.py OK ✓")
+

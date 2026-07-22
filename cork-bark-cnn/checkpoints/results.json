@@ -1,37 +1,37 @@
 {
   "RandomForest": {
-    "accuracy": 0.8260869565217391,
-    "balanced_accuracy": 0.7561026936026937,
-    "f1_macro": 0.7614441509178351,
-    "f1_weighted": 0.8248835955929776,
-    "train_time_s": 0.751624345779419
+    "accuracy": 0.8021978021978022,
+    "balanced_accuracy": 0.6917308680020544,
+    "f1_macro": 0.6802626262626262,
+    "f1_weighted": 0.7872673992673993,
+    "train_time_s": 1.2609570026397705
   },
   "SVM": {
-    "accuracy": 0.7717391304347826,
-    "balanced_accuracy": 0.7153479236812571,
-    "f1_macro": 0.6763593380614658,
-    "f1_weighted": 0.7709990749306198,
-    "train_time_s": 2.347386121749878
+    "accuracy": 0.8131868131868132,
+    "balanced_accuracy": 0.8089368258859784,
+    "f1_macro": 0.7285714285714285,
+    "f1_weighted": 0.8306122448979593,
+    "train_time_s": 2.9081156253814697
   },
   "CentroidKNN": {
-    "accuracy": 0.6413043478260869,
-    "balanced_accuracy": 0.4270482603815937,
-    "f1_macro": 0.39398496240601505,
-    "f1_weighted": 0.5546256946714613,
-    "train_time_s": 0.35126638412475586
+    "accuracy": 0.5274725274725275,
+    "balanced_accuracy": 0.615356959424756,
+    "f1_macro": 0.501364522417154,
+    "f1_weighted": 0.5816978343294132,
+    "train_time_s": 0.20183372497558594
   },
   "MobileNetV3": {
-    "accuracy": 0.8913043478260869,
-    "balanced_accuracy": 0.8380331088664422,
-    "f1_macro": 0.8524185958968568,
-    "f1_weighted": 0.8891292072766552,
-    "train_time_s": 490.31152153015137
+    "accuracy": 0.9340659340659341,
+    "balanced_accuracy": 0.8545454545454545,
+    "f1_macro": 0.8874574623237725,
+    "f1_weighted": 0.9315657604427657,
+    "train_time_s": 105.40351390838623
   },
   "EfficientNet-B0": {
-    "accuracy": 0.9347826086956522,
-    "balanced_accuracy": 0.9156846240179574,
-    "f1_macro": 0.9156846240179574,
-    "f1_weighted": 0.9347826086956522,
-    "train_time_s": 678.6485731601715
+    "accuracy": 0.9230769230769231,
+    "balanced_accuracy": 0.8852593733949666,
+    "f1_macro": 0.8886068476977568,
+    "f1_weighted": 0.9212462861813512,
+    "train_time_s": 624.9765675067902
   }
 }

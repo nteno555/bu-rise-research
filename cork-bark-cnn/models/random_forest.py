@@ -40,10 +40,19 @@ def extract_features(
     if extractor is None:
         extractor = build_feature_extractor(device)
 
+    feature_loader = DataLoader(
+        loader.dataset,
+        batch_size=loader.batch_size or 32,
+        shuffle=False,
+        num_workers=loader.num_workers,
+        drop_last=False,
+        pin_memory=True,
+    )
+
     all_feats, all_labels = [], []
 
     with torch.no_grad():
-        for imgs, labels in tqdm(loader, desc="Extracting features", leave=False):
+        for imgs, labels in tqdm(feature_loader, desc="Extracting features", leave=False):
             imgs = imgs.to(device)
             feats = extractor(imgs)  # (batch, 576)
             all_feats.append(feats.cpu().numpy())

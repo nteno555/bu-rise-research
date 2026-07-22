@@ -21,6 +21,19 @@ class CentroidKNN:
     num_classes:        int
     class_names:        list[str] = field(default_factory=list)
 
+    # todo maybe find cleaner way to do this
+    @property
+    def representatives_by_class(self) -> dict[int, list[dict]]:
+        by_class = {}
+        for cls in range(self.num_classes):
+            mask = (self.representative_y == cls)
+            cls_indices = self.representative_idx[mask]
+            cls_X = self.representative_X[mask]
+            reps = []
+            for idx, x in zip(cls_indices, cls_X):
+                reps.append({"original_index": int(idx), "features": x})
+            by_class[cls] = reps
+        return by_class
 
 
 def build_centroid_knn(
@@ -37,39 +50,42 @@ def build_centroid_knn(
     if normalize_features:
         X_train = normalize(X_train, norm="l2")
 
-    k_total = num_classes * k_per_class
-    print(f"\n[CentroidKNN] Running K-Means: k={k_total} ({num_classes} classes × {k_per_class})")
-
-    kmeans = KMeans(n_clusters=k_total, n_init=10, random_state=random_state)
-    kmeans.fit(X_train)
-    centroids = kmeans.cluster_centers_
+    print(f"\n[CentroidKNN] Running Per-Class K-Means ({num_classes} classes x {k_per_class} centroids)")
 
     rep_X_list, rep_y_list, rep_idx_list = [], [], []
 
-    for c_idx, centroid in enumerate(centroids):
-        dists = np.linalg.norm(X_train - centroid, axis=1)
-        nearest_idx = int(np.argmin(dists))
+    for cls in range(num_classes):
+        cls_mask = (y_train == cls)
+        indices_cls = np.where(cls_mask)[0]
+        X_cls = X_train[cls_mask]
 
-        rep_X_list.append(X_train[nearest_idx])
-        rep_y_list.append(y_train[nearest_idx])
-        rep_idx_list.append(nearest_idx)
+        if len(X_cls) == 0:
+            continue
 
-    representative_X   = np.stack(rep_X_list)    # (k_total, D)
-    representative_y   = np.array(rep_y_list)    # (k_total,)
-    representative_idx = np.array(rep_idx_list)  # (k_total,)
+        n_clusters = min(k_per_class, len(X_cls))
+        kmeans = KMeans(n_clusters=n_clusters, n_init=10, random_state=random_state)
+        kmeans.fit(X_cls)
+
+        for centroid in kmeans.cluster_centers_:
+            dists = np.linalg.norm(X_cls - centroid, axis=1)
+            nearest_in_cls = int(np.argmin(dists))
+            original_idx = indices_cls[nearest_in_cls]
+
+            rep_X_list.append(X_train[original_idx])
+            rep_y_list.append(cls)
+            rep_idx_list.append(original_idx)
 
     unique_pairs = {}
-    for i in range(len(representative_idx)):
-        ridx = representative_idx[i]
+    for i in range(len(rep_idx_list)):
+        ridx = rep_idx_list[i]
         if ridx not in unique_pairs:
-            unique_pairs[ridx] = (representative_X[i], representative_y[i])
+            unique_pairs[ridx] = (rep_X_list[i], rep_y_list[i])
 
     rep_X_dedup = np.stack([v[0] for v in unique_pairs.values()])
     rep_y_dedup = np.array([v[1] for v in unique_pairs.values()])
     rep_idx_dedup = np.array(list(unique_pairs.keys()))
 
-    print(f"[CentroidKNN] {k_total} centroids → {len(rep_idx_dedup)} unique representatives "
-          f"(after dedup)")
+    print(f"[CentroidKNN] Total {len(rep_idx_list)} centroids --> {len(rep_idx_dedup)} unique representatives")
 
     for cls in range(num_classes):
         n = int((rep_y_dedup == cls).sum())
@@ -116,7 +132,7 @@ def save_centroid_knn(cknn: CentroidKNN, path: str) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, "wb") as f:
         pickle.dump(cknn, f)
-    print(f"[CentroidKNN] Saved to {path}")
+    print(f"[CentroidKNN] Yay! Saved to {path}")
 
 
 def load_centroid_knn(path: str) -> CentroidKNN:
